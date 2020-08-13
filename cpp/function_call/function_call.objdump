@@ -1,0 +1,134 @@
+### 
+int func1(){
+    return 0;
+}
+
+$i686-elf-gcc function_call.c -o func1.out -nostdlib -nostartfiles
+$objdump -D func1.out
+func1.out:     file format elf32-i386
+Disassembly of section .text:
+08048054 <func1>:   // beginning of procedure
+ 8048054:   55                      push   %ebp         // push value of EBP onto the stack
+ 8048055:   89 e5                   mov    %esp,%ebp    // copy value of ESP into EBP
+ 8048057:   b8 00 00 00 00          mov    $0x0,%eax    // leave return value in EAX
+ 804805c:   5d                      pop    %ebp         // restore base pointer, EBP
+ 804805d:   c3                      ret                 // execute RET instruction 
+
+ // RET finds and removes the appropriate return address from the stack.
+
+###
+int func2(int x){
+    return x;
+}
+
+$i686-elf-gcc function_call.c -o func2.out -nostdlib -nostartfiles
+$objdump -D func2.out
+func2.out:     file format elf32-i386
+Disassembly of section .text:
+08048054 <func2>:
+ 8048054:   55                      push   %ebp             // push value of EBP onto the stack
+ 8048055:   89 e5                   mov    %esp,%ebp        // copy value of ESP into EBP
+ 8048057:   8b 45 08                mov    0x8(%ebp),%eax   // parameter 'int x' stored at [EBP] + 8
+                                                                // The return address of the caller is stored at [EBP] + 4
+                                                                // leave return value in EAX (happens to be variable 'x' in this case)
+ 804805a:   5d                      pop    %ebp             // restore base pointer, EBP
+ 804805b:   c3                      ret                     // execute RET instruction 
+###
+int func3(int x, int y){
+    return y;
+}
+
+$i686-elf-gcc function_call.c -o func3.out -nostdlib -nostartfiles
+$objdump -D func3.out
+func3.out:     file format elf32-i386
+Disassembly of section .text:
+08048054 <func3>:
+ 8048054:   55                      push   %ebp             // push value of EBP onto the stack
+ 8048055:   89 e5                   mov    %esp,%ebp        // copy value of ESP into EBP
+ 8048057:   8b 45 0c                mov    0xc(%ebp),%eax   // parameter 'int y' stored at [EBP] + 12
+                                                                // The return address of the caller is stored at [EBP] + 4
+                                                                // parameter 'int x' stored at [EBP] + 8
+                                                                // leave return value in EAX (happens to be variable 'y' in this case)
+ 804805a:   5d                      pop    %ebp             // restore base pointer, EBP
+ 804805b:   c3                      ret                     // execute RET instruction
+###
+int func4(int x, int y){
+    int z = 5;
+    return z;
+}
+
+$i686-elf-gcc function_call.c -o func4.out -nostdlib -nostartfiles
+$objdump -D func4.out
+
+func4.out:     file format elf32-i386
+Disassembly of section .text:
+08048054 <func4>:
+ 8048054:   55                      push   %ebp                 // push value of EBP onto the stack
+ 8048055:   89 e5                   mov    %esp,%ebp            // copy value of ESP into EBP
+ 8048057:   83 ec 10                sub    $0x10,%esp           // allocate local variables by creating space on the stack
+                                                                    // ESP is decremented by 16 bytes (but an integer on i386 machine should take only 4 bytes?)
+                                                                    // is this an optimization?
+ 804805a:   c7 45 fc 05 00 00 00    movl   $0x5,-0x4(%ebp)      // set local variable 'int z' (which is located at [EBP] - 4) to value of 5.
+ 8048061:   8b 45 fc                mov    -0x4(%ebp),%eax      // leave return value in EAX (happens to be variable 'int z' in this case)
+ 8048064:   c9                      leave                       // this is new...what does this do?
+                                                                    // does it restore the base pointer, EBP among other things?
+ 8048065:   c3                      ret                         // execute RET instruction
+###
+int func5(int x, int y){
+    int z = 5;
+    int a = 10;
+    int b = 11;
+    int c = 12;
+    return z;
+}
+
+$i686-elf-gcc function_call.c -o func5.out -nostdlib -nostartfiles
+$objdump -D func5.out
+func5.out:     file format elf32-i386
+Disassembly of section .text:
+08048054 <func5>:
+ 8048054:   55                      push   %ebp                 // push value of EBP onto the stack
+ 8048055:   89 e5                   mov    %esp,%ebp            // copy value of ESP into EBP
+ 8048057:   83 ec 10                sub    $0x10,%esp           // allocate local variables by creating space on the stack
+                                                                    // ESP is decremented by 16 bytes (but an integer on i386 machine should take only 4 bytes?)
+                                                                    // is this an optimization?: Yes, I believe so.
+ 804805a:   c7 45 fc 05 00 00 00    movl   $0x5,-0x4(%ebp)      // set local variable 'int z' (which is located at [EBP] - 4) to value of 5.
+ 8048061:   c7 45 f8 0a 00 00 00    movl   $0xa,-0x8(%ebp)      // set local variable 'int a' (which is located at [EBP] - 8) to value of 10.
+ 8048068:   c7 45 f4 0b 00 00 00    movl   $0xb,-0xc(%ebp)      // set local variable 'int b' (which is located at [EBP] - 12) to value of 11.
+ 804806f:   c7 45 f0 0c 00 00 00    movl   $0xc,-0x10(%ebp)     // set local variable 'int c' (which is located at [EBP] - 16) to value of 12.
+ 8048076:   8b 45 fc                mov    -0x4(%ebp),%eax      // leave return value in EAX (happens to be variable 'int z' in this case)
+ 8048079:   c9                      leave                       // leave instruction restores the previous stack frame
+                                                                    // mov %ebp, %esp (EBP -> ESP)
+                                                                    // pop %ebp
+ 804807a:   c3                      ret                         // execute RET instruction
+###
+int func3(int x, int y){
+    int z = 5;
+    int a = 10;
+    int b = 11;
+    int c = 12;
+    int d = 13;
+    int e = 14;
+    return z;
+}
+
+$i686-elf-gcc function_call.c -o func6.out -nostdlib -nostartfiles
+$objdump -D func6.out
+func6.out:     file format elf32-i386
+Disassembly of section .text:
+08048054 <func6>:
+ 8048054:   55                      push   %ebp                 // push value of EBP onto the stack
+ 8048055:   89 e5                   mov    %esp,%ebp            // copy value of ESP into EBP
+ 8048057:   83 ec 20                sub    $0x20,%esp           // allocate local variables by creating space on the stack
+ 804805a:   c7 45 fc 05 00 00 00    movl   $0x5,-0x4(%ebp)      // you get the idea...
+ 8048061:   c7 45 f8 0a 00 00 00    movl   $0xa,-0x8(%ebp)      //
+ 8048068:   c7 45 f4 0b 00 00 00    movl   $0xb,-0xc(%ebp)      //
+ 804806f:   c7 45 f0 0c 00 00 00    movl   $0xc,-0x10(%ebp)     //
+ 8048076:   c7 45 ec 0d 00 00 00    movl   $0xd,-0x14(%ebp)     //
+ 804807d:   c7 45 e8 0e 00 00 00    movl   $0xe,-0x18(%ebp)     //
+ 8048084:   8b 45 fc                mov    -0x4(%ebp),%eax      //
+ 8048087:   c9                      leave                       // leave instruction restores the previous stack frame
+                                                                    // mov %ebp, %esp (EBP -> ESP)
+                                                                    // pop %ebp
+ 8048088:   c3                      ret                         // execute RET instruction
+###

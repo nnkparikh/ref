@@ -1,0 +1,25 @@
+###
+int func_forloop(int argc, char** argv){
+    for(int i = 0; i < argc; i++){
+        continue;
+    }
+    return 0;
+}
+
+objdump -D func_foorloop.o
+func_foorloop.o:     file format elf32-i386
+Disassembly of section .text:
+00000000 <func_forloop>:
+   0: 55                    push   %ebp                               // push value of EBP onto the stack
+   1: 89 e5                 mov    %esp,%ebp                          // copy value of ESP into EBP
+   3: 83 ec 10              sub    $0x10,%esp
+   6: c7 45 fc 00 00 00 00  movl   $0x0,-0x4(%ebp)
+   d: eb 04                 jmp    13 <func_forloop+0x13>
+   f: 83 45 fc 01           addl   $0x1,-0x4(%ebp)
+  13: 8b 45 fc              mov    -0x4(%ebp),%eax
+  16: 3b 45 08              cmp    0x8(%ebp),%eax
+  19: 7c f4                 jl     f <func_forloop+0xf>
+  1b: b8 00 00 00 00        mov    $0x0,%eax
+  20: c9                    leave
+  21: c3                    ret
+###
