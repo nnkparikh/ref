@@ -20,5 +20,5 @@
 | [Number of Islands](https://leetcode.com/problems/number-of-islands/) | Medium |
 | [Binary Tree Inorder Traversal](https://leetcode.com/problems/binary-tree-inorder-traversal/) | Medium |
 | [Validate BST](https://leetcode.com/problems/validate-binary-search-tree/) | Medium |
-| [Reverse Linked List ||](https://leetcode.com/problems/reverse-linked-list-ii/) | Medium |
+| [Reverse Linked List](https://leetcode.com/problems/reverse-linked-list-ii/) | Medium |
 | [Decode Ways](https://leetcode.com/problems/decode-ways/) | Medium |
