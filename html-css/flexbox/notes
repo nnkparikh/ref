@@ -1,0 +1,9 @@
+- Flexbox uses two types of boxes:
+1. Flex containers, and
+2. Flex items
+
+Flex container:
+- group flex items together and define how they are positioned.
+- every HTML element that is a direct* child of a flex container is an "item"
+- flex items can be manipulated individually but its mainly the container that defines their layout
+- flex items lets the container know how many thigns it needs to position
